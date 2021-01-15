@@ -40,3 +40,11 @@ if (
 } else {
     test;
 }
+
+== should keep the header on one line if possible ==
+if (!botCache.helpers.isAdmin(message, targetGuildSettings)) return addReaction(message.channelID, message.id, "❌");
+
+[expect]
+if (!botCache.helpers.isAdmin(message, targetGuildSettings)) {
+    return addReaction(message.channelID, message.id, "❌");
+}
