@@ -3531,7 +3531,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
             items.push_str("if");
             if context.config.if_statement_space_after_if_keyword { items.push_str(" "); }
             let test = node.test;
-            items.extend(parse_node_in_parens(
+            let test_items = parse_node_in_parens(
                 |context| parse_node(test.into(), context),
                 ParseNodeInParensOptions {
                     inner_span: test.span(),
@@ -3539,7 +3539,15 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
                     allow_open_paren_trailing_comments: false,
                 },
                 context
-            ));
+            ).into_rc_path();
+            items.extend(
+                conditions::if_true_or(
+                    "indentIfNotStartOfLine",
+                    |context| condition_resolvers::is_on_different_line(context, cons_start_info),
+                    parser_helpers::new_line_group(test_items.clone().into()),
+                    test_items.into(),
+                ).into()
+            );
             items
         },
         use_braces: context.config.if_statement_use_braces,
