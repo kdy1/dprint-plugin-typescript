@@ -6203,6 +6203,7 @@ struct ParseConditionalBraceBodyOptions<'a> {
     header_start_token: Option<&'a TokenAndSpan>,
     start_header_info: Option<Info>,
     end_header_info: Option<Info>,
+    body_start_info: Option<Info>
 }
 
 struct ParseConditionalBraceBodyResult {
