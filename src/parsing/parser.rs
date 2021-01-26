@@ -3544,7 +3544,8 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
                     allow_open_paren_trailing_comments: false,
                 },
                 context
-            ).into_rc_path();
+            );
+            let test_items = test_items.into_rc_path();
             items.extend(
                 conditions::if_true_or(
                     "indentIfNotStartOfLine",
