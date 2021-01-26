@@ -2019,6 +2019,7 @@ fn parse_paren_expr<'a>(node: &'a ParenExpr, context: &mut Context<'a>) -> Print
             inner_span: node.expr.span(),
             prefer_hanging: true,
             allow_open_paren_trailing_comments: true,
+            use_new_line_group: false,
         },
         context
     )).into();
@@ -3189,6 +3190,7 @@ fn parse_do_while_stmt<'a>(node: &'a DoWhileStmt, context: &mut Context<'a>) -> 
             inner_span: node.test.span(),
             prefer_hanging: context.config.do_while_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -3388,6 +3390,7 @@ fn parse_for_stmt<'a>(node: &'a ForStmt, context: &mut Context<'a>) -> PrintItem
             inner_span: create_span(first_inner_node.lo(), last_inner_node.hi()),
             prefer_hanging: context.config.for_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -3450,6 +3453,7 @@ fn parse_for_in_stmt<'a>(node: &'a ForInStmt, context: &mut Context<'a>) -> Prin
             inner_span: inner_header_span,
             prefer_hanging: context.config.for_in_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -3502,6 +3506,7 @@ fn parse_for_of_stmt<'a>(node: &'a ForOfStmt, context: &mut Context<'a>) -> Prin
             inner_span: inner_header_span,
             prefer_hanging: context.config.for_of_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -3542,6 +3547,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
                     inner_span: test.span(),
                     prefer_hanging: context.config.if_statement_prefer_hanging,
                     allow_open_paren_trailing_comments: false,
+                    use_new_line_group: true,
                 },
                 context
             );
@@ -3549,8 +3555,8 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
             items.extend(
                 conditions::if_true_or(
                     "indentIfNotStartOfLine",
-                    move |context| condition_resolvers::is_on_different_line(context, &cons_start_info),
-                    parser_helpers::new_line_group(test_items.clone().into()),
+                    move |context| condition_resolvers::is_on_same_line(context, &cons_start_info),
+                    test_items.clone().into(),
                     test_items.into(),
                 ).into()
             );
@@ -3656,6 +3662,7 @@ fn parse_switch_stmt<'a>(node: &'a SwitchStmt, context: &mut Context<'a>) -> Pri
             inner_span: node.discriminant.span(),
             prefer_hanging: context.config.switch_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -3932,6 +3939,7 @@ fn parse_while_stmt<'a>(node: &'a WhileStmt, context: &mut Context<'a>) -> Print
             inner_span: node.test.span(),
             prefer_hanging: context.config.while_statement_prefer_hanging,
             allow_open_paren_trailing_comments: false,
+            use_new_line_group: false,
         },
         context
     ));
@@ -4298,6 +4306,7 @@ fn parse_parenthesized_type<'a>(node: &'a TsParenthesizedType, context: &mut Con
             inner_span: node.type_ann.span(),
             prefer_hanging: true,
             allow_open_paren_trailing_comments: true,
+            use_new_line_group: false,
         },
         context
     )).into();
@@ -5765,6 +5774,7 @@ struct ParseNodeInParensOptions {
     inner_span: Span,
     prefer_hanging: bool,
     allow_open_paren_trailing_comments: bool,
+    use_new_line_group: bool
 }
 
 fn parse_node_in_parens<'a>(
@@ -5773,6 +5783,7 @@ fn parse_node_in_parens<'a>(
     context: &mut Context<'a>
 ) -> PrintItems {
     let inner_span = opts.inner_span;
+    let use_new_line_group = opts.use_new_line_group;
     let paren_span = get_paren_span(&inner_span, context);
     let force_use_new_lines = get_force_use_new_lines(inner_span, &paren_span, context);
 
@@ -5782,6 +5793,8 @@ fn parse_node_in_parens<'a>(
             surround_with_new_lines(with_indent(parsed_node))
         } else if opts.prefer_hanging {
             parsed_node
+        } else if use_new_line_group {
+            parser_helpers::new_line_group(parsed_node)
         } else {
             parser_helpers::surround_with_newlines_indented_if_multi_line(parsed_node, context.config.indent_width)
         }
