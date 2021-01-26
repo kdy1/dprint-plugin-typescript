@@ -613,6 +613,7 @@ fn parse_catch_clause<'a>(node: &'a CatchClause, context: &mut Context<'a>) -> P
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context).parsed_node);
 
     return items;
@@ -3403,6 +3404,7 @@ fn parse_for_stmt<'a>(node: &'a ForStmt, context: &mut Context<'a>) -> PrintItem
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context).parsed_node);
 
     return items;
@@ -3463,6 +3465,7 @@ fn parse_for_in_stmt<'a>(node: &'a ForInStmt, context: &mut Context<'a>) -> Prin
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context).parsed_node);
 
     return items;
@@ -3514,6 +3517,7 @@ fn parse_for_of_stmt<'a>(node: &'a ForOfStmt, context: &mut Context<'a>) -> Prin
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context).parsed_node);
 
     return items;
@@ -3523,6 +3527,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
     let mut items = PrintItems::new();
     let cons = node.cons;
     let cons_span = cons.span();
+    let cons_start_info = Info::new("ifStmtConsBodyStart");
     let result = parse_header_with_conditional_brace_body(ParseHeaderWithConditionalBraceBodyOptions {
         parent: node.span(),
         body_node: cons.into(),
@@ -3543,7 +3548,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
             items.extend(
                 conditions::if_true_or(
                     "indentIfNotStartOfLine",
-                    |context| condition_resolvers::is_on_different_line(context, cons_start_info),
+                    |context| condition_resolvers::is_on_different_line(context, &cons_start_info),
                     parser_helpers::new_line_group(test_items.clone().into()),
                     test_items.into(),
                 ).into()
@@ -3554,6 +3559,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
         brace_position: context.config.if_statement_brace_position,
         single_body_position: Some(context.config.if_statement_single_body_position),
         requires_braces_condition_ref: context.take_if_stmt_last_brace_condition_ref(),
+        body_start_info: Some(cons_start_info),
     }, context);
     let if_stmt_start_info = Info::new("ifStmtStart");
 
@@ -3602,6 +3608,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
                 header_start_token: Some(else_keyword),
                 start_header_info: Some(start_else_header_info),
                 end_header_info: None,
+                body_start_info: None,
             }, context).parsed_node);
         }
     }
@@ -3783,6 +3790,7 @@ fn parse_try_stmt<'a>(node: &'a TryStmt, context: &mut Context<'a>) -> PrintItem
         header_start_token: None,
         start_header_info: None,
         end_header_info: None,
+        body_start_info: None,
     }, context).parsed_node);
 
     if let Some(handler) = node.handler {
@@ -3823,6 +3831,7 @@ fn parse_try_stmt<'a>(node: &'a TryStmt, context: &mut Context<'a>) -> PrintItem
             header_start_token: None,
             start_header_info: None,
             end_header_info: None,
+            body_start_info: None,
         }, context).parsed_node);
     }
 
@@ -3936,6 +3945,7 @@ fn parse_while_stmt<'a>(node: &'a WhileStmt, context: &mut Context<'a>) -> Print
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context).parsed_node);
     return items;
 }
@@ -6157,6 +6167,7 @@ struct ParseHeaderWithConditionalBraceBodyOptions<'a> {
     brace_position: BracePosition,
     single_body_position: Option<SingleBodyPosition>,
     requires_braces_condition_ref: Option<ConditionReference>,
+    body_start_info: Option<Info>,
 }
 
 struct ParseHeaderWithConditionalBraceBodyResult {
@@ -6183,6 +6194,7 @@ fn parse_header_with_conditional_brace_body<'a>(opts: ParseHeaderWithConditional
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
+        body_start_info: None,
     }, context);
     items.extend(result.parsed_node);
 
@@ -6203,6 +6215,7 @@ struct ParseConditionalBraceBodyOptions<'a> {
     header_start_token: Option<&'a TokenAndSpan>,
     start_header_info: Option<Info>,
     end_header_info: Option<Info>,
+    /// If this field is [None], it will be initialized by parse_conditional_brace_body.
     body_start_info: Option<Info>
 }
 
