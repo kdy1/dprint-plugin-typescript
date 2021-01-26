@@ -3548,7 +3548,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
             items.extend(
                 conditions::if_true_or(
                     "indentIfNotStartOfLine",
-                    |context| condition_resolvers::is_on_different_line(context, &cons_start_info),
+                    move |context| condition_resolvers::is_on_different_line(context, &cons_start_info),
                     parser_helpers::new_line_group(test_items.clone().into()),
                     test_items.into(),
                 ).into()
@@ -6180,6 +6180,7 @@ fn parse_header_with_conditional_brace_body<'a>(opts: ParseHeaderWithConditional
     let start_header_info = Info::new("startHeader");
     let end_header_info = Info::new("endHeader");
     let mut items = PrintItems::new();
+    let body_start_info = opts.body_start_info;
 
     items.push_info(start_header_info);
     items.extend(opts.parsed_header);
@@ -6194,7 +6195,7 @@ fn parse_header_with_conditional_brace_body<'a>(opts: ParseHeaderWithConditional
         header_start_token: None,
         start_header_info: Some(start_header_info),
         end_header_info: Some(end_header_info),
-        body_start_info: None,
+        body_start_info,
     }, context);
     items.extend(result.parsed_node);
 
@@ -6227,7 +6228,7 @@ struct ParseConditionalBraceBodyResult {
 
 fn parse_conditional_brace_body<'a>(opts: ParseConditionalBraceBodyOptions<'a>, context: &mut Context<'a>) -> ParseConditionalBraceBodyResult {
     // todo: reorganize...
-    let start_info = Info::new("startInfo");
+    let start_info = opts.body_start_info.unwrap_or_else(|| Info::new("startInfo"));
     let end_info = Info::new("endInfo");
     let start_header_info = opts.start_header_info;
     let end_header_info = opts.end_header_info;
