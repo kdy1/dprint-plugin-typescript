@@ -3541,8 +3541,9 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
             items.push_str("if");
             if context.config.if_statement_space_after_if_keyword { items.push_str(" "); }
             let test = node.test;
+            let inner_items = parse_node(test.into(), context).into_rc_path();
             let test_items_same_line = parse_node_in_parens(
-                |context| parse_node(test.into(), context),
+                |_context| inner_items.clone().into(),
                 ParseNodeInParensOptions {
                     inner_span: test.span(),
                     prefer_hanging: context.config.if_statement_prefer_hanging,
@@ -3552,7 +3553,7 @@ fn parse_if_stmt<'a>(node: &'a IfStmt, context: &mut Context<'a>) -> PrintItems 
                 context
             );
             let test_items_different_line = parse_node_in_parens(
-                |context| parse_node(test.into(), context),
+                |context| inner_items.clone().into(),
                 ParseNodeInParensOptions {
                     inner_span: test.span(),
                     prefer_hanging: context.config.if_statement_prefer_hanging,
