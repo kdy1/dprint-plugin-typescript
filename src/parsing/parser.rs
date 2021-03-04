@@ -5758,14 +5758,20 @@ fn parse_node_in_parens<'a>(
     let force_use_new_lines = get_force_use_new_lines(inner_span, &paren_span, context);
 
     return parse_surrounded_by_tokens(|context| {
+        let mut items = PrintItems::new();
+        let info = Info::new("parenNodeStart");
+        items.push_condition(force_reevaluation_once_resolved(info));
         let parsed_node = parse_node(context);
-        if force_use_new_lines {
+        items.push_info(info);
+        items.extend(if force_use_new_lines {
             surround_with_new_lines(with_indent(parsed_node))
         } else if opts.prefer_hanging {
             parsed_node
         } else {
             parser_helpers::surround_with_newlines_indented_if_multi_line(parsed_node, context.config.indent_width)
-        }
+        });
+
+        items
     }, |_| None, ParseSurroundedByTokensOptions {
         open_token: "(",
         close_token: ")",
