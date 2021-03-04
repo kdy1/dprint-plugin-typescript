@@ -46,5 +46,9 @@ if (!botCache.helpers) return addReaction(message.channelID, message.id, "❌");
 
 [expect]
 if (!botCache.helpers) {
-    return addReaction(message.channelID, message.id, "❌");
+    return addReaction(
+        message.channelID,
+        message.id,
+        "❌"
+    );
 }
