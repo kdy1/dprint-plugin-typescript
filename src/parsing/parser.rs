@@ -5764,6 +5764,7 @@ fn parse_node_in_parens<'a>(
         } else if opts.prefer_hanging {
             parsed_node
         } else {
+            dbg!();
             parser_helpers::surround_with_newlines_indented_if_multi_line(parsed_node, context.config.indent_width)
         }
     }, |_| None, ParseSurroundedByTokensOptions {
