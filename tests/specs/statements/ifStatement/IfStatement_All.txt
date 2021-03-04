@@ -40,3 +40,11 @@ if (
 } else {
     test;
 }
+
+== should keep the header on one line if possible ==
+if (!botCache.helpers) return addReaction(message.channelID, message.id, "❌");
+
+[expect]
+if (!botCache.helpers) {
+    return addReaction(message.channelID, message.id, "❌");
+}
